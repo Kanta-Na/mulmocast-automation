@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mulmocast コンテンツ生成システム</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        input[type="url"],
+        select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        input[type="url"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            margin-bottom: 0;
+            cursor: pointer;
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .generate-btn:active {
+            transform: translateY(0);
+        }
+
+        .generate-btn.loading {
+            background: #999;
+            pointer-events: none;
+        }
+
+        .status {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .progress {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .progress-text {
+            margin-top: 10px;
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .features {
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .features h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #666;
+        }
+
+        .feature-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mulmocast</h1>
+        <p class="subtitle">URLから自動でコンテンツを生成</p>
+
+        <form id="generateForm">
+            <div class="form-group">
+                <label for="url">WebサイトのURL</label>
+                <input 
+                    type="url" 
+                    id="url" 
+                    name="url" 
+                    placeholder="https://example.com" 
+                    required
+                    pattern="https?://.+"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="style">スタイル</label>
+                <select id="style" name="style">
+                    <option value="ghibli">ジブリ風アニメーション</option>
+                    <option value="business">ビジネスプレゼンテーション</option>
+                    <option value="education">教育コンテンツ</option>
+                    <option value="news">ニュース形式</option>
+                </select>
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="subtitles" name="subtitles">
+                <label for="subtitles">日本語字幕を追加</label>
+            </div>
+
+            <button type="submit" class="generate-btn" id="generateBtn">
+                コンテンツを生成
+            </button>
+        </form>
+
+        <div class="progress" id="progress">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">処理を開始しています...</div>
+        </div>
+
+        <div class="status" id="status"></div>
+
+        <div class="features">
+            <h3>生成されるコンテンツ</h3>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <div class="feature-icon">🎬</div>
+                    <span>動画ファイル (MP4)</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🎨</div>
+                    <span>AIが生成した画像</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🎙️</div>
+                    <span>音声ナレーション</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📝</div>
+                    <span>MulmoScript (JSON)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('generateForm');
+        const generateBtn = document.getElementById('generateBtn');
+        const status = document.getElementById('status');
+        const progress = document.getElementById('progress');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+
+        // プログレスバーの更新
+        const updateProgress = (percent, text) => {
+            progressFill.style.width = percent + '%';
+            progressText.textContent = text;
+        };
+
+        // ステータス表示
+        const showStatus = (message, type) => {
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+        };
+
+        // フォーム送信処理
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const url = document.getElementById('url').value;
+            const style = document.getElementById('style').value;
+            const subtitles = document.getElementById('subtitles').checked;
+
+            // UIをリセット
+            status.style.display = 'none';
+            progress.style.display = 'block';
+            generateBtn.textContent = '生成中...';
+            generateBtn.classList.add('loading');
+
+            try {
+                // APIを呼び出してジョブを開始
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url, style, subtitles })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const { jobId } = await response.json();
+                
+                // Server-Sent Eventsで進捗を監視
+                const eventSource = new EventSource(`/api/progress/${jobId}`);
+                
+                eventSource.onmessage = (event) => {
+                    const job = JSON.parse(event.data);
+                    
+                    // 進捗バーを更新
+                    updateProgress(job.progress, job.message);
+                    
+                    // 完了または失敗時の処理
+                    if (job.status === 'completed') {
+                        showStatus('✅ コンテンツの生成が完了しました！出力ディレクトリを確認してください。', 'success');
+                        eventSource.close();
+                        
+                        // 生成されたファイルのリンクを取得して表示することも可能
+                        fetch(`/api/files/${jobId}`)
+                            .then(res => res.json())
+                            .then(files => {
+                                console.log('生成されたファイル:', files);
+                                // ここでダウンロードリンクなどを表示可能
+                            });
+                    } else if (job.status === 'failed') {
+                        showStatus(`❌ エラーが発生しました: ${job.message}`, 'error');
+                        eventSource.close();
+                    }
+                };
+                
+                eventSource.onerror = (error) => {
+                    console.error('EventSource error:', error);
+                    eventSource.close();
+                    showStatus('❌ 接続エラーが発生しました', 'error');
+                };
+
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus(`❌ エラーが発生しました: ${error.message}`, 'error');
+            } finally {
+                generateBtn.textContent = 'コンテンツを生成';
+                generateBtn.classList.remove('loading');
+            }
+        });
+
+        // URL入力時のバリデーション
+        document.getElementById('url').addEventListener('input', (e) => {
+            const url = e.target.value;
+            if (url && !url.match(/^https?:\/\/.+/)) {
+                e.target.setCustomValidity('有効なURLを入力してください（http://またはhttps://で始まる）');
+            } else {
+                e.target.setCustomValidity('');
+            }
+        });
+    </script>
+</body>
+</html>
