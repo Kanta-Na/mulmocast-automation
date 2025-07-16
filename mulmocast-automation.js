@@ -1,6 +1,8 @@
 // mulmocast-automation.js
 // HPのURLからMulmoScriptを生成し、自動でコンテンツを作成するスクリプト
 
+require('dotenv').config();  // この行を追加！
+
 const axios = require('axios');
 const fs = require('fs').promises;
 const path = require('path');

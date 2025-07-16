@@ -45,6 +45,10 @@ npm install -g mulmocast
 
 ### CLI版
 ```bash
+# URLにクエリパラメータ（?や&）が含まれる場合は引用符で囲む
+node mulmocast-automation.js "https://example.com/page?param=value" --style ghibli --subtitles
+
+# シンプルなURLの場合
 node mulmocast-automation.js https://example.com --style ghibli --subtitles
 ```
 
