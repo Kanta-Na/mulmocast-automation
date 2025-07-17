@@ -43,7 +43,7 @@ class MulmocastAutomation {
       .replace(/\s+/g, ' ')
       .trim();
     
-    return text.substring(0, 3000); // 最初の3000文字を使用
+    return text.substring(0, text.length); // 全てのテキストを使用。上限を設定したい場合は、第二引数に数値を入れる。
   }
 
   // MulmoScriptを生成するプロンプト
@@ -54,7 +54,7 @@ class MulmocastAutomation {
 【重要】以下の形式に厳密に従ってください。フィールドの追加や変更は行わないでください。
 
 【コンテンツ】
-${content.substring(0, 2000)}
+${content.substring(0, content.length)}
 
 【要求事項】
 1. 必ず以下の構造に従うこと
@@ -101,7 +101,7 @@ JSONのみを返してください。説明文や追加のテキストは不要�
           }
         ],
         temperature: 0.7,
-        max_tokens: 2000,
+        max_tokens: 3500,  // デフォルト 2000
         response_format: { type: "json_object" }  // JSON形式を強制
       });
 
@@ -179,8 +179,14 @@ JSONのみを返してください。説明文や追加のテキストは不要�
   // メイン処理：URLからコンテンツを自動生成
   async generateContentFromURL(url, options = {}) {
     try {
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      //const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      //const scriptFilename = `script_${timestamp}.json`;
+
+      const now = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      const timestamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
       const scriptFilename = `script_${timestamp}.json`;
+
 
       // 1. URLからコンテンツを取得
       const htmlContent = await this.fetchWebContent(url);
