@@ -2,6 +2,10 @@
 
 HPのURLを入力するだけで、MulmoScriptを自動生成し、動画・音声・画像などのマルチモーダルコンテンツを作成するシステムです。
 
+## UI プレビュー
+
+![Mulmocast Web UI](./images/ui-screenshot.png)
+
 ## 機能
 
 - 🌐 WebサイトのURLからコンテンツを自動抽出
@@ -53,10 +57,21 @@ node mulmocast-automation.js https://example.com --style ghibli --subtitles
 ```
 
 ### Web UI版
+
+Web UIを使用すると、ブラウザから簡単にコンテンツを生成できます：
+
 ```bash
 npm start
 # ブラウザで http://localhost:3000 を開く
 ```
+
+![Web UI Screenshot](./images/ui-screenshot.png)
+
+Web UIでは以下の操作が可能です：
+- URLの入力
+- スタイルの選択（ドロップダウンメニュー）
+- 日本語字幕の追加オプション
+- 生成されたコンテンツのダウンロード
 
 ### APIとして使用
 ```javascript
@@ -86,6 +101,8 @@ mulmocast-automation/
 ├── test-automation.js         # テストスクリプト
 ├── public/
 │   └── index.html            # Web UI
+├── images/                    # スクリーンショット等
+│   └── ui-screenshot.png
 └── output/                    # 生成されたコンテンツ
 ```
 
